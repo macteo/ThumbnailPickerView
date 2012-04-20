@@ -30,7 +30,7 @@
 
 static const CGSize kThumbnailSize        = {16, 13};
 static const CGSize kBigThumbnailSize     = {36, 27};
-static const NSUInteger kThumbnailSpacing = 1;
+static const NSUInteger kThumbnailSpacing = 2;
 
 static const NSUInteger kTagOffset = 100;
 static const NSUInteger kBigThumbnailTagOffset = 1000;
@@ -159,6 +159,8 @@ static const NSUInteger kBigThumbnailTagOffset = 1000;
 
 - (void)reloadData
 {
+    
+    NSLog(@"Reaload data");
     NSUInteger totalItemsCount = [self.dataSource numberOfImagesForThumbnailPickerView:self];
     if (totalItemsCount == 0)
         return;
@@ -218,6 +220,7 @@ static const NSUInteger kBigThumbnailTagOffset = 1000;
             }
             imageView.tag = tag;
         }
+        // [imageView setContentMode:UIViewContentModeScaleAspectFill];
         
         imageViewFrame = imageView.frame;
         imageViewFrame.origin.x = i * (kThumbnailSize.width + kThumbnailSpacing);
@@ -230,6 +233,17 @@ static const NSUInteger kBigThumbnailTagOffset = 1000;
             UIImage *image = [self.dataSource thumbnailPickerView:self imageAtIndex:index];
             dispatch_async(dispatch_get_main_queue(),^{
                 imageView.image = image;
+                
+                // Need to mantain proportions from the images.
+                // Constrain in the kThumbnailSize.width
+                // Mantaining the kThumbnailSize.height
+
+                // If you want to resize the container
+                float width = kThumbnailSize.height*image.size.width/image.size.height;
+                float span = (kThumbnailSize.width - width)/2.0;
+                
+                CGRect rect = CGRectMake(imageView.frame.origin.x + span, imageView.frame.origin.y, width, kThumbnailSize.height);
+                [imageView setFrame:rect];
             });
         });
         dispatch_release(imageLoadingQueue);
@@ -248,6 +262,12 @@ static const NSUInteger kBigThumbnailTagOffset = 1000;
                 imageView.image = image;
                 if (index == self.selectedIndex) {
                     self.bigThumbnailImageView.image = image;
+                    float width = kBigThumbnailSize.height*image.size.width/image.size.height;
+                    float span = (kBigThumbnailSize.width - width)/2.0;
+                    
+                    CGRect rect = CGRectMake(self.bigThumbnailImageView.frame.origin.x, self.bigThumbnailImageView.frame.origin.y, width, kBigThumbnailSize.height);
+                    [self.bigThumbnailImageView setFrame:rect];
+
                 }
             });
         });
@@ -310,6 +330,11 @@ static const NSUInteger kBigThumbnailTagOffset = 1000;
                 UIImage *image = [self.dataSource thumbnailPickerView:self imageAtIndex:self.selectedIndex];
                 dispatch_async(dispatch_get_main_queue(),^{
                     self.bigThumbnailImageView.image = image;
+                    float width = kBigThumbnailSize.height*image.size.width/image.size.height;
+                    float span = (kBigThumbnailSize.width - width)/2.0;
+                    
+                    CGRect rect = CGRectMake(self.bigThumbnailImageView.frame.origin.x, self.bigThumbnailImageView.frame.origin.y, width, kBigThumbnailSize.height);
+                    [self.bigThumbnailImageView setFrame:rect];
                 });
             });
             dispatch_release(imageLoadingQueue);
